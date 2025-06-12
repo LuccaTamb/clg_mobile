@@ -1,20 +1,31 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import MainNavigator from './src/navigation/MainNavigator';
+import { AppProvider } from './src/context/AppContext';
+import { useEffect } from 'react';
+import { getData, storeData } from './src/utils/storage'; 
+import { mockAppUsage, mockLearningVideos, mockChartData } from './src/utils/mockData';
 
 export default function App() {
+  useEffect(() => {
+    const initializeData = async () => {
+      // Verifica e inicializa apenas se não existir
+      const existingApps = await getData('appUsage');
+      if (!existingApps) await storeData('appUsage', mockAppUsage);
+      
+      const existingVideos = await getData('learningVideos');
+      if (!existingVideos) await storeData('learningVideos', mockLearningVideos);
+      
+      const existingChart = await getData('chartData');
+      if (!existingChart) await storeData('chartData', mockChartData);
+    };
+    initializeData();
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <AppProvider>
+      <NavigationContainer>
+        <MainNavigator />
+      </NavigationContainer>
+    </AppProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
