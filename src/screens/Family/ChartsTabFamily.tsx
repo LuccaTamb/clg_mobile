@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Text, StyleSheet, TextInput, Dimensions } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, TextInput, Dimensions, Alert } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
-import { getData } from '../../utils/storage';
+import { getData, storeData } from '../../utils/storage';
 import { useAppContext } from '../../context/AppContext';
 import BlockButton from '../../components/BlockButton';
+import { Ionicons } from '@expo/vector-icons';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -22,7 +23,7 @@ export default function ChartsTabFamily() {
   const [chartData, setChartData] = useState<any>(null);
   const [accountBlockedUntil, setAccountBlockedUntil] = useState<number | null>(null);
   const [remainingTime, setRemainingTime] = useState<number>(0);
-  const { blockAccount, unblockAccount } = useAppContext();
+  const { blockAccount, unblockAccount, isAccountBlocked } = useAppContext();
 
   useEffect(() => {
     const loadChartData = async () => {
@@ -35,21 +36,31 @@ export default function ChartsTabFamily() {
       }
     };
 
-    const checkBlock = async () => {
-      const data = await getData('accountBlock');
-      if (data?.blockedUntil && data.blockedUntil > Date.now()) {
-        setAccountBlockedUntil(data.blockedUntil);
-      } else {
-        setAccountBlockedUntil(null);
+    const checkBlockStatus = async () => {
+      try {
+        const data = await getData('accountBlock');
+        if (data?.blockedUntil) {
+          if (data.blockedUntil > Date.now()) {
+            setAccountBlockedUntil(data.blockedUntil);
+            setRemainingTime(data.blockedUntil - Date.now());
+          } else {
+            // Desbloqueia se expirado
+            await storeData('accountBlock', null);
+            setAccountBlockedUntil(null);
+          }
+        } else {
+          setAccountBlockedUntil(null);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar bloqueio:', error);
       }
     };
 
     loadChartData();
-    checkBlock();
+    checkBlockStatus();
 
     const interval = setInterval(() => {
-      loadChartData();
-      checkBlock();
+      checkBlockStatus();
     }, 5000);
 
     return () => clearInterval(interval);
@@ -61,7 +72,15 @@ export default function ChartsTabFamily() {
     const timer = setInterval(() => {
       const now = Date.now();
       const diff = accountBlockedUntil - now;
-      setRemainingTime(diff > 0 ? diff : 0);
+
+      if (diff <= 0) {
+        setRemainingTime(0);
+        setAccountBlockedUntil(null);
+        clearInterval(timer);
+        storeData('accountBlock', null);
+      } else {
+        setRemainingTime(diff);
+      }
     }, 1000);
 
     return () => clearInterval(timer);
@@ -73,32 +92,56 @@ export default function ChartsTabFamily() {
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
-  const handleBlockAccount = () => {
+  const handleBlockAccount = async () => {
     const minutes = parseInt(blockTime);
     if (!blockTime || isNaN(minutes) || minutes <= 0) {
-      alert('Por favor, insira minutos válidos');
+      Alert.alert('Valor inválido', 'Por favor, insira um número válido de minutos.');
       return;
     }
-    blockAccount(minutes);
-    setBlockTime('');
-    alert(`Conta bloqueada por ${minutes} minutos`);
+
+    try {
+      await blockAccount(minutes);
+      const data = await getData('accountBlock');
+      if (data?.blockedUntil) {
+        setAccountBlockedUntil(data.blockedUntil);
+        setRemainingTime(data.blockedUntil - Date.now());
+      }
+      setBlockTime('');
+      Alert.alert(`Conta bloqueada por ${minutes} minutos`);
+    } catch (error) {
+      console.error('Erro ao bloquear conta:', error);
+      Alert.alert('Erro', 'Não foi possível bloquear a conta.');
+    }
   };
 
-  // const handleUnblockAccount = async () => {
-  //   await unblockAccount();
-  //   setAccountBlockedUntil(null);
-  //   setRemainingTime(0);
-  //   alert('Conta desbloqueada com sucesso!');
-  // };
   const handleUnblockAccount = async () => {
-    await unblockAccount();
-    const data = await getData('accountBlock');
-    if (!data?.blockedUntil) {
-      setAccountBlockedUntil(null);
-      setRemainingTime(0);
-      alert('Conta desbloqueada com sucesso!');
-    } else {
-      alert('Falha ao desbloquear a conta.');
+    try {
+      Alert.alert(
+        'Desbloquear Conta',
+        'Tem certeza que deseja desbloquear a conta do paciente?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Desbloquear', onPress: async () => {
+              await unblockAccount();
+
+              // Verificação direta no AsyncStorage
+              const blockData = await getData('accountBlock');
+
+              if (blockData === null) {
+                setAccountBlockedUntil(null);
+                setRemainingTime(0);
+                Alert.alert('Sucesso', 'Conta desbloqueada com sucesso!');
+              } else {
+                Alert.alert('Erro', 'Falha ao desbloquear a conta. Tente novamente.');
+              }
+            }
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Erro ao desbloquear conta:', error);
+      Alert.alert('Erro', 'Não foi possível desbloquear a conta.');
     }
   };
 
@@ -134,6 +177,21 @@ export default function ChartsTabFamily() {
 
       <View style={styles.blockSection}>
         <Text style={styles.sectionHeader}>Bloquear Conta do Paciente</Text>
+
+        {/* Mostrar cronômetro grande se bloqueado */}
+        {accountBlockedUntil && (
+          <View style={styles.largeTimerContainer}>
+            <View style={styles.timerHeader}>
+              <Ionicons name="lock-closed" size={32} color="#FF006E" />
+              <Text style={styles.timerHeaderText}>Conta Bloqueada</Text>
+            </View>
+            <Text style={styles.largeTimerText}>
+              {formatTime(remainingTime)}
+            </Text>
+            <Text style={styles.timerLabel}>Tempo restante</Text>
+          </View>
+        )}
+
         <TextInput
           style={styles.input}
           placeholder="Minutos"
@@ -147,21 +205,44 @@ export default function ChartsTabFamily() {
           onPress={accountBlockedUntil ? handleUnblockAccount : handleBlockAccount}
           color={accountBlockedUntil ? '#00C853' : '#FF006E'}
         />
-        {accountBlockedUntil && (
-          <Text style={styles.remainingTime}>Tempo restante: {formatTime(remainingTime)}</Text>
-        )}
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, flex: 1, backgroundColor: '#fff' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: { fontSize: 18, fontWeight: 'bold', marginBottom: 16, textAlign: 'center' },
-  chart: { borderRadius: 16, marginBottom: 20 },
-  blockSection: { marginTop: 20, padding: 16, backgroundColor: '#f9f9f9', borderRadius: 8 },
-  sectionHeader: { fontSize: 16, fontWeight: 'bold', marginBottom: 12 },
+  container: {
+    padding: 16,
+    flex: 1,
+    backgroundColor: '#fff'
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  header: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center'
+  },
+  chart: {
+    borderRadius: 16,
+    marginBottom: 20
+  },
+  blockSection: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  sectionHeader: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 12
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -169,11 +250,39 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
     backgroundColor: '#fff',
-  },
-  remainingTime: {
-    marginTop: 8,
+    width: '100%',
     textAlign: 'center',
+  },
+  largeTimerContainer: {
+    backgroundColor: '#fff0f5',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    width: '100%',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ffd6e7',
+  },
+  timerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  timerHeaderText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FF006E',
+    marginLeft: 10,
+  },
+  largeTimerText: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#FF006E',
+    textAlign: 'center',
+  },
+  timerLabel: {
     fontSize: 14,
-    color: '#555',
+    color: '#888',
+    marginTop: 5,
   },
 });

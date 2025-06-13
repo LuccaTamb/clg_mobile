@@ -8,6 +8,7 @@ interface AppBlock {
 interface AppContextProps {
   isAccountBlocked: boolean;
   blockAccount: (minutes: number) => void;
+  unblockAccount: () => Promise<void>; // Alterado para retornar Promise
 }
 
 interface AppProviderProps {
@@ -16,30 +17,24 @@ interface AppProviderProps {
 
 const AppContext = createContext<AppContextProps | undefined>(undefined);
 
-//export const AppProvider: React.FC = ({ children }) => {
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [isAccountBlocked, setIsAccountBlocked] = useState(false);
 
   useEffect(() => {
     const checkBlockStatus = async () => {
-      const blockData: AppBlock = await getData('accountBlock');
+      const blockData = await getData('accountBlock');
       if (blockData && blockData.blockedUntil > Date.now()) {
         setIsAccountBlocked(true);
       } else {
         setIsAccountBlocked(false);
       }
     };
-
+    
     checkBlockStatus();
     const interval = setInterval(checkBlockStatus, 60000);
-
+    
     return () => clearInterval(interval);
   }, []);
-
-  const unblockAccount = async () => {
-    await storeData('accountBlock', null);
-    setIsAccountBlocked(false);
-  };
 
   const blockAccount = async (minutes: number) => {
     const blockedUntil = Date.now() + minutes * 60000;
@@ -47,8 +42,18 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setIsAccountBlocked(true);
   };
 
+  // Função corrigida para desbloquear
+  const unblockAccount = async () => {
+    await storeData('accountBlock', null); // Armazena null para remover o bloqueio
+    setIsAccountBlocked(false);
+  };
+
   return (
-    <AppContext.Provider value={{ isAccountBlocked, blockAccount }}>
+    <AppContext.Provider value={{ 
+      isAccountBlocked, 
+      blockAccount, 
+      unblockAccount 
+    }}>
       {children}
     </AppContext.Provider>
   );
