@@ -1,30 +1,23 @@
+// AppsTabFamily.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, Alert } from 'react-native';
 import BlockButton from '../../components/BlockButton';
 import { getData, storeData } from '../../utils/storage';
 import { AppUsage } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
+import { mockAppUsage } from '../../utils/mockData';
 
-const mockApps: AppUsage[] = [
-  { id: '1', name: 'Instagram', usage: 120 },
-  { id: '2', name: 'Facebook', usage: 90 },
-  { id: '3', name: 'TikTok', usage: 150 },
-];
-
-export default function AppsTab() {
-  const [apps, setApps] = useState<AppUsage[]>(mockApps);
+const AppsTabFamily = () => {
+  const [apps, setApps] = useState<AppUsage[]>(mockAppUsage);
   const [blockTimeInput, setBlockTimeInput] = useState<{ [key: string]: string }>({});
   const timersRef = useRef<{ [key: string]: NodeJS.Timeout | null }>({});
 
-  // Carregar dados do AsyncStorage
   useEffect(() => {
     const loadAppUsage = async () => {
       const storedApps = await getData('appUsage');
       if (storedApps) {
         setApps(storedApps);
-        
-        // Iniciar timers para apps já bloqueados
-        storedApps.forEach((app: AppUsage) => {  // Corrigido aqui: adicionei a tipagem
+        storedApps.forEach((app: AppUsage) => {
           if (app.blockedUntil && app.blockedUntil > Date.now()) {
             startTimer(app.id, app.blockedUntil);
           }
@@ -32,42 +25,42 @@ export default function AppsTab() {
       }
     };
     loadAppUsage();
-    
+
     return () => {
-      // Limpar todos os timers ao desmontar
       Object.values(timersRef.current).forEach(timer => {
         if (timer) clearInterval(timer);
       });
     };
   }, []);
+  // useEffect(() => {
+  //   setApps(mockAppUsage);
+  // }, []);
 
   const startTimer = (appId: string, blockedUntil: number) => {
-    // Limpar timer existente se houver
     if (timersRef.current[appId]) {
       clearInterval(timersRef.current[appId]!);
     }
-    
+
     const timer = setInterval(() => {
-      setApps(prevApps => 
+      setApps(prevApps =>
         prevApps.map(app => {
           if (app.id === appId) {
             const remaining = blockedUntil - Date.now();
-            
+
             if (remaining <= 0) {
               clearInterval(timer);
               timersRef.current[appId] = null;
-              // Remover as propriedades de bloqueio
               const { blockedUntil, remaining, ...rest } = app;
-              return rest;
+              return rest as AppUsage;
             }
-            
+
             return { ...app, remaining };
           }
           return app;
         })
       );
     }, 1000);
-    
+
     timersRef.current[appId] = timer;
   };
 
@@ -82,16 +75,15 @@ export default function AppsTab() {
     }
 
     const blockedUntil = Date.now() + minutes * 60000;
-    
-    const updatedApps = apps.map(app => 
+
+    const updatedApps = apps.map(app =>
       app.id === appId ? { ...app, blockedUntil, remaining: minutes * 60000 } : app
     );
-    
+
     setApps(updatedApps);
     await storeData('appUsage', updatedApps);
     setBlockTimeInput({ ...blockTimeInput, [appId]: '' });
-    
-    // Iniciar o cronômetro
+
     startTimer(appId, blockedUntil);
   };
 
@@ -128,7 +120,6 @@ export default function AppsTab() {
                 keyboardType="numeric"
                 value={blockTimeInput[item.id] || ''}
                 onChangeText={text => {
-                  // Permite apenas números
                   const numericValue = text.replace(/[^0-9]/g, '');
                   setBlockTimeInput({ ...blockTimeInput, [item.id]: numericValue });
                 }}
@@ -137,7 +128,7 @@ export default function AppsTab() {
                 title="Bloquear"
                 onPress={() => handleBlockApp(item.id)}
                 color="#FF006E"
-                disabled={!!(item.blockedUntil && item.blockedUntil > Date.now())} 
+                disabled={!!(item.blockedUntil && item.blockedUntil > Date.now())}
               />
             </View>
           </View>
@@ -145,18 +136,11 @@ export default function AppsTab() {
       />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  header: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
+  container: { flex: 1, padding: 16 },
+  header: { fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
   appItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -165,31 +149,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  appInfo: {
-    flex: 1,
-  },
-  appName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  usage: {
-    color: '#666',
-    marginTop: 4,
-  },
-  timerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  timerText: {
-    color: '#FF006E',
-    marginLeft: 4,
-    fontWeight: 'bold',
-  },
-  blockContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  appInfo: { flex: 1 },
+  appName: { fontSize: 16, fontWeight: 'bold' },
+  usage: { color: '#666', marginTop: 4 },
+  timerContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  timerText: { color: '#FF006E', marginLeft: 4, fontWeight: 'bold' },
+  blockContainer: { flexDirection: 'row', alignItems: 'center' },
   input: {
     width: 80,
     borderWidth: 1,
@@ -199,3 +164,5 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
 });
+
+export default AppsTabFamily;

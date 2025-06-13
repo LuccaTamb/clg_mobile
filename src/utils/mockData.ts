@@ -1,7 +1,16 @@
+// mockData.ts
 export const mockAppUsage = [
   { id: '1', name: 'Instagram', usage: 120 },
   { id: '2', name: 'Facebook', usage: 90 },
-  { id: '3', name: 'TikTok', usage: 150 },
+  { id: '3', name: 'asd', usage: 150 },
+  { id: '4', name: 'WhatsApp', usage: 200 },
+  { id: '5', name: 'YouTube', usage: 180 },
+  { id: '6', name: 'Twitter', usage: 75 },
+  { id: '7', name: 'LinkedIn', usage: 45 },
+  { id: '8', name: 'Netflix', usage: 240 },
+  { id: '9', name: 'Spotify', usage: 150 },
+  { id: '10', name: 'Discord', usage: 110 },
+  { id: '11', name: 'Telegram', usage: 95 },
 ];
 
 export const mockLearningVideos = [

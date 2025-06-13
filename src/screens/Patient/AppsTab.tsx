@@ -1,17 +1,13 @@
+// AppsTab.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput } from 'react-native';
 import BlockButton from '../../components/BlockButton';
 import { getData, storeData } from '../../utils/storage';
 import { AppUsage } from '../../types';
+import { mockAppUsage } from '../../utils/mockData';
 
-const mockApps: AppUsage[] = [
-  { id: '1', name: 'Instagram', usage: 120 },
-  { id: '2', name: 'Facebook', usage: 90 },
-  { id: '3', name: 'TikTok', usage: 150 },
-];
-
-export default function AppsTab() {
-  const [apps, setApps] = useState<AppUsage[]>(mockApps);
+const AppsTab = () => {
+  const [apps, setApps] = useState<AppUsage[]>(mockAppUsage);
   const [blockTime, setBlockTime] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
@@ -21,18 +17,21 @@ export default function AppsTab() {
     };
     loadAppUsage();
   }, []);
+  // useEffect(() => {
+  //   setApps(mockAppUsage);
+  // }, []);
 
   const handleBlockApp = async (appId: string) => {
     const time = blockTime[appId];
     if (!time) return;
 
     const minutes = parseInt(time);
-    if (isNaN(minutes)) return;
+    if (isNaN(minutes) || minutes <= 0) return;
 
-    const updatedApps = apps.map(app => 
+    const updatedApps = apps.map(app =>
       app.id === appId ? { ...app, blockedUntil: Date.now() + minutes * 60000 } : app
     );
-    
+
     setApps(updatedApps);
     await storeData('appUsage', updatedApps);
     setBlockTime({ ...blockTime, [appId]: '' });
@@ -60,12 +59,16 @@ export default function AppsTab() {
                 placeholder="Minutos"
                 keyboardType="numeric"
                 value={blockTime[item.id] || ''}
-                onChangeText={text => setBlockTime({ ...blockTime, [item.id]: text })}
+                onChangeText={text => {
+                  const numericValue = text.replace(/[^0-9]/g, '');
+                  setBlockTime({ ...blockTime, [item.id]: numericValue });
+                }}
               />
               <BlockButton
                 title="Bloquear"
                 onPress={() => handleBlockApp(item.id)}
                 color="#FF006E"
+                disabled={!!(item.blockedUntil && item.blockedUntil > Date.now())}
               />
             </View>
           </View>
@@ -73,18 +76,11 @@ export default function AppsTab() {
       />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  header: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
+  container: { flex: 1, padding: 16 },
+  header: { fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
   appItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -93,24 +89,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  appInfo: {
-    flex: 1,
-  },
-  appName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  usage: {
-    color: '#666',
-  },
-  blockedText: {
-    color: '#FF006E',
-    fontWeight: 'bold',
-  },
-  blockContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  appInfo: { flex: 1 },
+  appName: { fontSize: 16, fontWeight: 'bold' },
+  usage: { color: '#666' },
+  blockedText: { color: '#FF006E', fontWeight: 'bold', marginTop: 4 },
+  blockContainer: { flexDirection: 'row', alignItems: 'center' },
   input: {
     width: 80,
     borderWidth: 1,
@@ -120,3 +103,5 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
 });
+
+export default AppsTab;
