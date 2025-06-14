@@ -14,8 +14,15 @@ export const mockAppUsage = [
 ];
 
 export const mockLearningVideos = [
-  { id: 1, title: 'Gerenciamento Financeiro', url: 'https://www.youtube.com/watch?v=abc123' },
-  { id: 2, title: 'Economia Doméstica', url: 'https://www.youtube.com/watch?v=def456' },
+  { id: 1, title: 'Começar no Mercado Financeiro', url: 'https://youtu.be/8HeMXk3JbMk?si=Zf_Mf8F1GEVeXZ7Y' },
+  { id: 2, title: 'Renda Fixa Atualmente', url: 'https://youtu.be/Wj4814pYAYg?si=w2iGcItoRG2aLLqr' },
+  { id: 3, title: 'Investimento para PJ', url: 'https://youtu.be/KYDxlcDi2cU?si=55YvtVSqtggMq-x4' },
+  { id: 4, title: 'Onde Investir em Maio 2025', url: 'https://youtu.be/xHdqKabvlAQ?si=cjujzU43X4e3b7yj' },
+  { id: 5, title: 'Otimismo com o Brasil', url: 'https://youtu.be/bo_TXMt-Jrk?si=J8f_ek5daRPmkSv1' },
+  { id: 6, title: 'Investir em Crédito Privado', url: 'https://youtu.be/wYXig5UCwYU?si=tpAs06ayxmdjo8-c' },
+  { id: 7, title: 'Fundos Imobiliarios', url: 'https://youtu.be/HJ5g9MeKQ50?si=MLUMUtkrzDm5JO9S' },
+  { id: 8, title: 'Investir no Exterior', url: 'https://youtu.be/Ye3bU8ugT8c?si=D-SjibPqOtMFhwWO' },
+  { id: 9, title: 'Investir com Juros Altos', url: 'https://youtu.be/mUVxUZspCaI?si=LGa33ovi_K4pdBnn' }
 ];
 
 export const mockChartData = {

@@ -1,20 +1,23 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getData, storeData } from '../utils/storage';
-import { mockAppUsage } from '../utils/mockData';
-import { AppUsage } from '../types';
-
-interface AppBlock {
-  blockedUntil: number;
-}
+import { mockAppUsage, mockLearningVideos } from '../utils/mockData';
+import { AppUsage, VideoItem } from '../types';
 
 interface AppContextProps {
+  // Bloqueio da conta
   isAccountBlocked: boolean;
   blockAccount: (minutes: number) => void;
   unblockAccount: () => Promise<void>;
 
+  // Apps
   apps: AppUsage[];
   blockApp: (appId: string, minutes: number) => void;
   unblockApp: (appId: string) => void;
+
+  // Vídeos
+  videos: VideoItem[];
+  addVideo: (video: VideoItem) => void;
+  removeVideo: (id: number) => void;
 }
 
 interface AppProviderProps {
@@ -26,6 +29,7 @@ const AppContext = createContext<AppContextProps | undefined>(undefined);
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [isAccountBlocked, setIsAccountBlocked] = useState(false);
   const [apps, setApps] = useState<AppUsage[]>(mockAppUsage);
+  const [videos, setVideos] = useState<VideoItem[]>(mockLearningVideos);
 
   // Verifica bloqueio de conta
   useEffect(() => {
@@ -43,7 +47,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Carrega dados dos apps
+  // Carrega dados dos apps e vídeos
   useEffect(() => {
     const loadApps = async () => {
       const storedApps = await getData('appUsage');
@@ -52,12 +56,25 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       }
     };
     loadApps();
+
+    const loadVideos = async () => {
+      const storedVideos = await getData('learningVideos');
+      if (storedVideos) {
+        setVideos(storedVideos);
+      }
+    };
+    loadVideos();
   }, []);
 
-  // Salva apps no AsyncStorage sempre que mudar
+  // Salva apps sempre que mudar
   useEffect(() => {
     storeData('appUsage', apps);
   }, [apps]);
+
+  // Salva vídeos sempre que mudar
+  useEffect(() => {
+    storeData('learningVideos', videos);
+  }, [videos]);
 
   // Bloqueio de conta
   const blockAccount = async (minutes: number) => {
@@ -71,7 +88,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setIsAccountBlocked(false);
   };
 
-  // 🔥 Bloqueio de app individual
+  //Apps
   const blockApp = (appId: string, minutes: number) => {
     const blockedUntil = Date.now() + minutes * 60000;
     const updated = apps.map(app =>
@@ -91,6 +108,17 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setApps(updated);
   };
 
+  //Vídeos
+  const addVideo = (video: VideoItem) => {
+    const updated = [...videos, video];
+    setVideos(updated);
+  };
+
+  const removeVideo = (id: number) => {
+    const updated = videos.filter(video => video.id !== id);
+    setVideos(updated);
+  };
+
   return (
     <AppContext.Provider value={{
       isAccountBlocked,
@@ -99,6 +127,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       apps,
       blockApp,
       unblockApp,
+      videos,
+      addVideo,
+      removeVideo,
     }}>
       {children}
     </AppContext.Provider>
