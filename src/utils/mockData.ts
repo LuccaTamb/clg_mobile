@@ -1,16 +1,16 @@
 // mockData.ts
 export const mockAppUsage = [
-  { id: '1', name: 'Instagram', usage: 120 },
-  { id: '2', name: 'Facebook', usage: 90 },
-  { id: '3', name: 'asd', usage: 150 },
-  { id: '4', name: 'WhatsApp', usage: 200 },
-  { id: '5', name: 'YouTube', usage: 180 },
-  { id: '6', name: 'Twitter', usage: 75 },
-  { id: '7', name: 'LinkedIn', usage: 45 },
-  { id: '8', name: 'Netflix', usage: 240 },
-  { id: '9', name: 'Spotify', usage: 150 },
-  { id: '10', name: 'Discord', usage: 110 },
-  { id: '11', name: 'Telegram', usage: 95 },
+  { id: '1', name: 'Bet dá Sorte', usage: 120 },
+  { id: '2', name: 'Betano', usage: 90 },
+  { id: '3', name: 'VBet', usage: 150 },
+  { id: '4', name: 'Betnacional', usage: 200 },
+  { id: '5', name: 'bet365', usage: 180 },
+  { id: '6', name: 'Stake', usage: 75 },
+  { id: '7', name: 'Superbet', usage: 45 },
+  { id: '8', name: 'Novibet', usage: 240 },
+  { id: '9', name: 'KTO', usage: 150 },
+  { id: '10', name: 'Estrela Bet', usage: 110 },
+  { id: '11', name: 'F12 Bet', usage: 95 },
 ];
 
 export const mockLearningVideos = [
