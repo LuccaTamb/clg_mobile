@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { getData, storeData } from '../utils/storage';
 import { mockAppUsage, mockLearningVideos } from '../utils/mockData';
 import { AppUsage, VideoItem } from '../types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AppContextProps {
   // Bloqueio da conta
@@ -83,9 +84,24 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setIsAccountBlocked(true);
   };
 
+  // const unblockAccount = async () => {
+  //   try {
+  //     await AsyncStorage.removeItem('accountBlock');
+  //     setIsAccountBlocked(false);
+  //   } catch (error) {
+  //     console.error('Erro ao desbloquear conta:', error);
+  //   }
+  // };
   const unblockAccount = async () => {
-    await storeData('accountBlock', null);
-    setIsAccountBlocked(false);
+    try {
+      // Remove completamente o item do storage
+      await AsyncStorage.removeItem('accountBlock');
+      setIsAccountBlocked(false);
+      console.log('Conta desbloqueada no contexto');
+    } catch (error) {
+      console.error('Erro ao desbloquear conta:', error);
+      throw new Error('Falha ao desbloquear conta');
+    }
   };
 
   //Apps

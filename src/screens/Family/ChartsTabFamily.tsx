@@ -114,36 +114,88 @@ export default function ChartsTabFamily() {
     }
   };
 
+  // const handleUnblockAccount = async () => {
+  //   try {
+  //     Alert.alert(
+  //       'Desbloquear Conta',
+  //       'Tem certeza que deseja desbloquear a conta do paciente?',
+  //       [
+  //         { text: 'Cancelar', style: 'cancel' },
+  //         {
+  //           text: 'Desbloquear', onPress: async () => {
+  //             await unblockAccount();
+
+  //             // Verificação direta no AsyncStorage
+  //             const blockData = await getData('accountBlock');
+
+  //             if (blockData === null) {
+  //               setAccountBlockedUntil(null);
+  //               setRemainingTime(0);
+  //               Alert.alert('Sucesso', 'Conta desbloqueada com sucesso!');
+  //             } else {
+  //               Alert.alert('Erro', 'Falha ao desbloquear a conta. Tente novamente.');
+  //             }
+  //           }
+  //         },
+  //       ]
+  //     );
+  //   } catch (error) {
+  //     console.error('Erro ao desbloquear conta:', error);
+  //     Alert.alert('Erro', 'Não foi possível desbloquear a conta.');
+  //   }
+  // };
+  // const handleUnblockAccount = () => {
+  //   console.log('CLICOU NO BOTÃO');
+  // };
+  const confirmUnblockAccount = () => {
+    Alert.alert(
+      'Desbloquear Conta',
+      'Tem certeza que deseja desbloquear a conta do paciente?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Desbloquear', onPress: () => handleUnblockAccount() }, // chama a função async fora do Alert
+      ],
+      { cancelable: false }
+    );
+  };
+
+  // const handleUnblockAccount = async () => {
+  //   try {
+  //     console.log('Tentando desbloquear...');
+
+  //     await unblockAccount();
+
+  //     Alert.alert('Sucesso', 'Conta desbloqueada com sucesso!');
+
+  //     setAccountBlockedUntil(null);
+  //     setRemainingTime(0);
+  //   } catch (error) {
+  //     console.error('Erro ao desbloquear:', error);
+  //     Alert.alert('Erro', 'Não foi possível desbloquear a conta.');
+  //   }
+  // };
   const handleUnblockAccount = async () => {
     try {
-      Alert.alert(
-        'Desbloquear Conta',
-        'Tem certeza que deseja desbloquear a conta do paciente?',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Desbloquear', onPress: async () => {
-              await unblockAccount();
+      console.log('Tentando desbloquear...');
+      await unblockAccount();
 
-              // Verificação direta no AsyncStorage
-              const blockData = await getData('accountBlock');
+      // Atualiza o estado local imediatamente
+      setAccountBlockedUntil(null);
+      setRemainingTime(0);
 
-              if (blockData === null) {
-                setAccountBlockedUntil(null);
-                setRemainingTime(0);
-                Alert.alert('Sucesso', 'Conta desbloqueada com sucesso!');
-              } else {
-                Alert.alert('Erro', 'Falha ao desbloquear a conta. Tente novamente.');
-              }
-            }
-          },
-        ]
-      );
+      // Força uma verificação no contexto
+      const blockData = await getData('accountBlock');
+      if (!blockData) {
+        Alert.alert('Sucesso', 'Conta desbloqueada com sucesso!');
+      } else {
+        console.log('Dados persistentes ainda existem:', blockData);
+      }
     } catch (error) {
-      console.error('Erro ao desbloquear conta:', error);
+      console.error('Erro ao desbloquear:', error);
       Alert.alert('Erro', 'Não foi possível desbloquear a conta.');
     }
   };
+
 
   if (!chartData) {
     return (
@@ -200,9 +252,10 @@ export default function ChartsTabFamily() {
           editable={!accountBlockedUntil}
           onChangeText={text => setBlockTime(text.replace(/[^0-9]/g, ''))}
         />
+
         <BlockButton
           title={accountBlockedUntil ? 'Desbloquear Conta' : 'Bloquear Conta'}
-          onPress={accountBlockedUntil ? handleUnblockAccount : handleBlockAccount}
+          onPress={accountBlockedUntil ? confirmUnblockAccount : handleBlockAccount}
           color={accountBlockedUntil ? '#00C853' : '#FF006E'}
         />
       </View>
