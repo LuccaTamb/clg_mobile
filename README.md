@@ -35,6 +35,14 @@ O aplicativo móvel desenvolvido com React Native (Expo) e TypeScript visa auxil
 
 ## Funcionalidades Principais
 
+### Login
+- Paciente
+    - email: paciente@clinica.com
+    - senha: paciente123 
+- Familia
+    - email: familia@clinica.com
+    - senha: familia123
+
 ### Paciente
 - **Aprendizagem**: Vídeos educativos organizados por categorias
 - **Gráficos**: Visualização de gastos e bloqueio temporário da conta
