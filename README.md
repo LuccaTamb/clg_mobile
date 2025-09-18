@@ -1,3 +1,10 @@
+#
+- 98215 - Gabriel Antony Cadima Ciziks 
+- 98169 - Lucca Sabatini Tambellini
+- 550781 - Sabrina Flores Morais
+- 551059 - Cassio Valezzi   
+#
+
 # Aplicativo de Controle Financeiro e Conscientização
 
 ## Instalação
@@ -39,7 +46,7 @@ O aplicativo móvel desenvolvido com React Native (Expo) e TypeScript visa auxil
 - **Monitoramento**: Visualização de gráficos e uso de apps em tempo real
 
 ## Tecnologias Utilizadas
-- React Native (
+- React Native 
 - Expo
 - TypeScript
 - AsyncStorage
