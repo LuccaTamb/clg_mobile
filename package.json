@@ -11,7 +11,7 @@
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
     "@expo/webpack-config": "18.0.1",
-    "@react-native-async-storage/async-storage": "^1.19.0",
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-navigation/bottom-tabs": "^6.5.8",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/stack": "^6.3.16",
