@@ -88,7 +88,7 @@ export default function LoginScreen({ navigation }: any) {
         {/* Logo ou título do aplicativo */}
         <View style={styles.logoContainer}>
           <Image
-            source={{ uri: 'https://placehold.co/100x100/3A86FF/FFFFFF/png?text=CLG' }}
+            source={{ uri: 'https://placehold.co/500x100/3A86FF/FFFFFF/png?text=Controle%20para%20Apostas' }}
             style={styles.logo}
             resizeMode="contain"
           />
@@ -171,7 +171,7 @@ export default function LoginScreen({ navigation }: any) {
             </TouchableOpacity>
           </View>
 
-          {/* Dica das credenciais mockadas (remova em produção) */}
+          {/*Credenciais mockadas*/}
           <View style={styles.credentialsHint}>
             <Text style={styles.credentialsTitle}>Credenciais de teste:</Text>
             <Text style={styles.credentialsText}>Paciente: paciente@clinica.com / paciente123</Text>
@@ -179,13 +179,6 @@ export default function LoginScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* Rodapé */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Não tem uma conta?</Text>
-          <TouchableOpacity disabled={isLoading}>
-            <Text style={styles.footerLink}>Cadastre-se</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -206,9 +199,10 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   logo: {
-    width: 100,
+    width: 400,
     height: 100,
     marginBottom: 16,
+    borderRadius: 50,
   },
   title: {
     fontSize: 24,
